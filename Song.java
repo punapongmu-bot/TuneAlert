@@ -1,4 +1,6 @@
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Song — ADT แทน "เพลง" หนึ่งเพลง
@@ -15,15 +17,34 @@ public final class Song {
     private final String title;
     private final String artist;
     private final List<String> tags;
+    /**
+     * สร้างเพลง
+     * @param title คือ ชื่อของเพลง ห้ามมี null/ว่าง
+     * @param artist คือ ศิลปินที่แต่งเพลง ห้ามมี null/ว่าง
+     * @param tags คือ ห้ามมีสมาชิกเป็น null/ว่าง
+     * @throws IllegalArgumentException เมื่อ title,artist,tags ผิดเงื่อนไข
+     */
 
     public Song(String title, String artist, List<String> tags) {
         // TODO(1.1): validate input — title/artist ห้าม null/ว่าง,
         //            tags ห้าม null และห้ามมีสมาชิกเป็น null/ว่าง
         //            ผิดเงื่อนไขให้ throw IllegalArgumentException
+        if(title==null||title=="") throw new IllegalArgumentException("title error");
+        if(artist==null||artist=="") throw new IllegalArgumentException("artist error");
+        if(tags==null||tags.contains(null)||tags.contains("")) throw new IllegalArgumentException("tags error");
         this.title = title;
         this.artist = artist;
         // TODO(1.2): ✗ เก็บลูกศรตรง ๆ = rep exposure ขาเข้า → defensive copy!
-        this.tags = tags;
+        this.tags = new ArrayList<>(tags);
+        checkRep();
+        
+    }
+
+    private void checkRep(){
+        assert title !=null && title!="" ;
+        assert artist!=null && artist!="" ;
+        assert tags!=null && !tags.contains(null ) && !tags.contains("");
+
     }
 
     // ---------- observers ----------
@@ -38,7 +59,7 @@ public final class Song {
 
     public List<String> tags() {
         // TODO(1.3): ✗ ส่งลูกศรออกไปตรง ๆ = rep exposure ขาออก → คืน "สำเนา"
-        return tags;
+        return new ArrayList<>(tags);
     }
 
     // ---------- producer ----------
@@ -50,21 +71,37 @@ public final class Song {
     public Song withTag(String tag) {
         // TODO(1.4): ✗ โค้ดนี้ mutate ตัวเอง! ต้องสร้างและคืน Song ตัวใหม่แทน
         //            (อย่าลืม validate tag ด้วย)
-        tags.add(tag);
-        return this;
+        List<String> next = new ArrayList<>(tags);
+        next.add(tag);
+        return new Song(title, artist, next);
     }
 
     // ---------- equality ----------
 
-    // TODO(1.5): override equals(Object o) แบบ structural equality
+    // TODO(1.5): override equals(Object o) แบบ structural equality หน้า18 objec. hascode เทียบเท่ากับ.equ
     //            เทียบ title, artist และ tags ทีละ field
     //            ตามลำดับมาตรฐาน: ตัวเอง → ชนิด (instanceof) → cast → เทียบ field
     //            ระวัง: ต้องรับ Object ไม่ใช่ Song ไม่งั้นเป็น overload ไม่ใช่ override!
+    @Override
+    public boolean equals(Object o) {
+        if(this==o)
+            return true;
+        if(!(o instanceof Song))
+            return false;
+        Song other  = (Song) o;
+        if(!this.title.equals(other.title) || !this.artist.equals(other.artist) || !this.tags.equals(other.tags))
+        return false;
+    return true;
 
-    // TODO(1.6): override hashCode() ให้สอดคล้องกับ equals
+    }
+
+    // TODO(1.6): override hashCode() ให้สอดคล้องกับ equals หน้า18
     //            (คำนวณจาก field ชุดเดียวกัน — Objects.hash(...) ช่วยได้)
 
     @Override
+    public int hashCode(){
+        return Objects.hash(title,artist,tags);
+    }
     public String toString() {
         return title + " — " + artist + " " + tags;
     }
